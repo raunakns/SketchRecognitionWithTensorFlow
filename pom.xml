@@ -83,7 +83,32 @@
                             <goal>compile</goal>
                             <goal>test-compile</goal>
                             <goal>compile-python</goal>
+                            <goal>test-compile-python</goal>
                         </goals>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <artifactId>maven-resources-plugin</artifactId>
+                <version>2.6</version>
+                <executions>
+                    <execution>
+                        <id>copy-resources</id>
+                        <phase>process-resources</phase>
+                        <goals>
+                            <goal>copy-resources</goal>
+                        </goals>
+                        <configuration>
+                            <outputDirectory>src/main/python/generated_proto</outputDirectory>
+                            <resources>
+                                <resource>
+                                    <directory>target/generated-sources/python</directory>
+                                    <includes>
+                                        <include> **/*.py</include>
+                                    </includes>
+                                </resource>
+                            </resources>
+                        </configuration>
                     </execution>
                 </executions>
             </plugin>
@@ -96,7 +121,7 @@
                 <executions>
                     <execution>
                         <id>checkstyle</id>
-                        <phase>validate</phase>
+                        <phase>process-resources</phase>
                         <configuration>
                             <configLocation>${absoluteCheckstyleLocation}</configLocation>
                             <suppressionsLocation>${checkstyleSuppressionLocation}</suppressionsLocation>
