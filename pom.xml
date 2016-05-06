@@ -9,84 +9,259 @@
     <version>1.0-SNAPSHOT</version>
 
     <properties>
-        <javacpp.cppbuild.skip>false</javacpp.cppbuild.skip> <!-- To skip execution of cppbuild.sh: -Djavacpp.cppbuild.skip=true -->
-        <javacpp.parser.skip>false</javacpp.parser.skip>     <!-- To skip header file parsing phase: -Djavacpp.parser.skip=true  -->
-        <javacpp.compiler.skip>false</javacpp.compiler.skip> <!-- To skip native compilation phase: -Djavacpp.compiler.skip=true -->
+        <parentConfigLocationDir>${basedir}</parentConfigLocationDir>
+        <protocLocation>/usr/local/bin/protoc</protocLocation>
+        <protobufVersion>2.6.1</protobufVersion>
+        <mockitoVersion>1.9.5</mockitoVersion>
+        <puppyVersion>[5.6,)</puppyVersion>
+        <junitVersion>4.11</junitVersion>
+        <slf4jVersion>1.7.9</slf4jVersion>
+        <log4jVersion>2.1</log4jVersion>
+        <logbackVersion>1.1.1</logbackVersion>
+        <checkstyleVersion>2.13</checkstyleVersion>
+        <findbugVersion>3.0.0</findbugVersion>
+        <powermock.version>1.5.6</powermock.version>
+        <easymock.version>3.3</easymock.version>
+        <sitepluginVersion>2.3.3</sitepluginVersion>
+        <coberturaVersion>2.6</coberturaVersion>
+        <pmdVersion>3.3</pmdVersion>
+        <failSafeVersion>2.18.1</failSafeVersion>
+        <surefireVersion>2.17</surefireVersion>
+
+        <!-- testing -->
+        <testLevel>0</testLevel>
+        <minTestLevel>0</minTestLevel>
+        <averageTestLevel>0</averageTestLevel>
+        <projectBranchLevel>0</projectBranchLevel>
+        <projectLineLevel>0</projectLineLevel>
+        <packageBranchLevel>0</packageBranchLevel>
+        <packageLineLevel>0</packageLineLevel>
+
+        <!-- config locations -->
+        <checkstyleLocation>${absoluteConfigLocation}/checkstyle.xml</checkstyleLocation>
+        <absoluteCheckstyleLocation>${checkstyleLocation}</absoluteCheckstyleLocation>
+        <checkstyleSuppressionLocation>${moduleConfigLocation}/checkstyle-suppressions.xml</checkstyleSuppressionLocation>
+        <findbugSupressionLocation>${moduleConfigLocation}/findbugs-exclude.xml</findbugSupressionLocation>
+        <moduleConfigLocation>${basedir}/config</moduleConfigLocation>
+        <pmdExclude>${moduleConfigLocation}/${pmdFile}</pmdExclude>
+        <pmdRuleset>${absoluteConfigLocation}/ruleset.xml</pmdRuleset>
+        <cpdExclude>${moduleConfigLocation}/${cpdFile}</cpdExclude>
+        <pmdRuleset>${absoluteConfigLocation}/ruleset.xml</pmdRuleset>
+        <pmdFile>exclude-pmd.properties</pmdFile>
+        <cpdFile>exclude-cpd.properties</cpdFile>
+        <absoluteConfigLocation>${parentConfigLocationDir}/config</absoluteConfigLocation>
     </properties>
 
-    <!--
     <build>
         <plugins>
             <plugin>
-                <groupId>org.bytedeco</groupId>
-                <artifactId>javacpp</artifactId>
-                <version>1.2-SNAPSHOT</version>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
                 <configuration>
-                    <properties>${javacpp.platform}</properties>
-                    <propertyKeysAndValues>
-                        <property>
-                            <name>platform.root</name>
-                            <value>${javacpp.platform.root}</value>
-                        </property>
-                        <property>
-                            <name>platform.compiler</name>
-                            <value>${javacpp.platform.compiler}</value>
-                        </property>
-                    </propertyKeysAndValues>
-                    <classPath>${project.build.outputDirectory}</classPath>
-                    <includePath>${basedir}/cppbuild/${javacpp.platform}/include/</includePath>
-                    <linkPath>${basedir}/cppbuild/${javacpp.platform}/lib/</linkPath>
-                    <preloadPath>${basedir}/cppbuild/${javacpp.platform}/bin/</preloadPath>
+                    <source>1.7</source>
+                    <target>1.7</target>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.xolstice.maven.plugins</groupId>
+                <artifactId>protobuf-maven-plugin</artifactId>
+                <version>0.5.0</version>
+                <configuration>
+                    <checkStaleness>true</checkStaleness>
+                    <staleMillis>10000</staleMillis>
+                    <protocExecutable>${protocLocation}</protocExecutable>
                 </configuration>
                 <executions>
                     <execution>
-                        <id>javacpp.parser</id>
                         <phase>generate-sources</phase>
-                        <goals>
-                            <goal>build</goal>
-                        </goals>
                         <configuration>
-                            <skip>${javacpp.parser.skip}</skip>
-                            <outputDirectory>${project.build.sourceDirectory}</outputDirectory>
-                            <classOrPackageName>org.bytedeco.javacpp.presets.*</classOrPackageName>
+                            <checkStaleness>true</checkStaleness>
+                            <staleMillis>10000</staleMillis>
+                            <protocExecutable>${protocLocation}</protocExecutable>
                         </configuration>
+                        <goals>
+                            <goal>compile</goal>
+                            <goal>test-compile</goal>
+                            <goal>compile-python</goal>
+                        </goals>
                     </execution>
+                </executions>
+            </plugin>
+
+            <!-- verification plugins -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-checkstyle-plugin</artifactId>
+                <version>${checkstyleVersion}</version>
+                <executions>
                     <execution>
-                        <id>javacpp.compiler</id>
-                        <phase>process-classes</phase>
-                        <goals>
-                            <goal>build</goal>
-                        </goals>
+                        <id>checkstyle</id>
+                        <phase>validate</phase>
                         <configuration>
-                            <skip>${javacpp.compiler.skip}</skip>
-                            <classOrPackageName>org.bytedeco.javacpp.*</classOrPackageName>
-                            <copyLibs>true</copyLibs>
+                            <configLocation>${absoluteCheckstyleLocation}</configLocation>
+                            <suppressionsLocation>${checkstyleSuppressionLocation}</suppressionsLocation>
+                            <suppressionsFileExpression>checkstyle.suppressions.file</suppressionsFileExpression>
+                            <encoding>UTF-8</encoding>
+                            <consoleOutput>true</consoleOutput>
+                            <checkstyle>
+                                <failsOnError>true</failsOnError>
+                            </checkstyle>
+                            <check>
+                                <failsOnError>true</failsOnError>
+                            </check>
                         </configuration>
+                        <goals>
+                            <goal>checkstyle</goal>
+                            <goal>check</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>findbugs-maven-plugin</artifactId>
+                <version>${findbugVersion}</version>
+                <configuration>
+                    <excludeFilterFile>${findbugSupressionLocation}</excludeFilterFile>
+                    <includeTests>false</includeTests>
+                </configuration>
+                <executions>
+                    <execution>
+                        <phase>compile</phase>
+                        <goals>
+                            <goal>check</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <version>${surefireVersion}</version>
+                <configuration>
+                    <excludes>
+                        <exclude>${basedir}/src/integration-test/**</exclude>
+                    </excludes>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>cobertura-maven-plugin</artifactId>
+                <version>${coberturaVersion}</version>
+                <configuration>
+                    <instrumentation>
+                        <ignores>
+                        </ignores>
+                        <excludes>
+                        </excludes>
+                    </instrumentation>
+                    <check>
+                        <haltOnFailure>true</haltOnFailure>
+                        <branchRate>${testLevel}</branchRate>
+                        <lineRate>${testLevel}</lineRate>
+                        <totalBranchRate>${projectBranchLevel}</totalBranchRate>
+                        <totalLineRate>${projectLineLevel}</totalLineRate>
+                        <packageLineRate>${packageBranchLevel}</packageLineRate>
+                        <packageBranchRate>${packageLineLevel}</packageBranchRate>
+                    </check>
+                </configuration>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>clean</goal>
+                            <goal>cobertura</goal>
+                            <goal>check</goal>
+                        </goals>
                     </execution>
                 </executions>
             </plugin>
         </plugins>
     </build>
-    -->
+
+    <repositories>
+        <!-- jitpack -->
+        <repository>
+            <id>jitpack.io</id>
+            <url>https://jitpack.io</url>
+        </repository>
+
+        <repository>
+            <id>central</id>
+            <name>Central Repository</name>
+            <url>https://repo.maven.apache.org/maven2</url>
+        </repository>
+
+        <!-- for the proto plugin -->
+        <repository>
+            <id>protoc-plugin-default</id>
+            <url>https://dl.bintray.com/sergei-ivanov/maven/</url>
+        </repository>
+        <repository>
+            <id>protoc-plugin-backup</id>
+            <url>http://sergei-ivanov.github.com/maven-protoc-plugin/repo/releases/</url>
+        </repository>
+    </repositories>
+
+    <pluginRepositories>
+        <!-- jitpack -->
+        <pluginRepository>
+            <id>jitpack.io</id>
+            <url>https://jitpack.io</url>
+        </pluginRepository>
+
+        <pluginRepository>
+            <id>central</id>
+            <name>Central Repository</name>
+            <url>https://repo.maven.apache.org/maven2</url>
+        </pluginRepository>
+
+        <!-- for the proto plugin -->
+        <pluginRepository>
+            <id>protoc-plugin-default</id>
+            <url>https://dl.bintray.com/sergei-ivanov/maven/</url>
+        </pluginRepository>
+        <pluginRepository>
+            <id>protoc-plugin-backup</id>
+            <url>http://sergei-ivanov.github.com/maven-protoc-plugin/repo/releases/</url>
+        </pluginRepository>
+    </pluginRepositories>
 
     <dependencies>
-        <!--
         <dependency>
-            <groupId>org.bytedeco.javacpp-presets</groupId>
-            <artifactId>tensorflow</artifactId>
-            <version>[1.0,)</version>
+            <groupId>com.github.dtracers</groupId>
+            <artifactId>SketchRecognitionFramework</artifactId>
+            <version>-SNAPSHOT</version>
         </dependency>
         <dependency>
-            <groupId>org.bytedeco</groupId>
-            <artifactId>javacpp</artifactId>
-            <version>1.1</version>
+            <groupId>com.google.protobuf</groupId>
+            <artifactId>protobuf-java</artifactId>
+            <version>${protobufVersion}</version>
         </dependency>
-        <dependency>
-            <groupId>org.python</groupId>
-            <artifactId>jython-standalone</artifactId>
-            <version>2.7.1b3</version>
-        </dependency>
-        -->
     </dependencies>
+
+    <profiles>
+        <profile>
+            <id>proto-windows</id>
+            <activation>
+                <os>
+                    <family>Windows</family>
+                </os>
+            </activation>
+            <properties>
+                <protocLocation>${env.protoc}</protocLocation>
+            </properties>
+        </profile>
+        <profile>
+            <id>proto-not-local</id>
+            <activation>
+                <file>
+                    <exists>/usr/bin/protoc</exists>
+                </file>
+            </activation>
+            <properties>
+                <protocLocation>/usr/bin/protoc</protocLocation>
+            </properties>
+        </profile>
+    </profiles>
 
 </project>
