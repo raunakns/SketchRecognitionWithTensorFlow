@@ -8,18 +8,85 @@
     <artifactId>CourseSketch.tensorflow</artifactId>
     <version>1.0-SNAPSHOT</version>
 
+    <properties>
+        <javacpp.cppbuild.skip>false</javacpp.cppbuild.skip> <!-- To skip execution of cppbuild.sh: -Djavacpp.cppbuild.skip=true -->
+        <javacpp.parser.skip>false</javacpp.parser.skip>     <!-- To skip header file parsing phase: -Djavacpp.parser.skip=true  -->
+        <javacpp.compiler.skip>false</javacpp.compiler.skip> <!-- To skip native compilation phase: -Djavacpp.compiler.skip=true -->
+    </properties>
+
+    <!--
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.bytedeco</groupId>
+                <artifactId>javacpp</artifactId>
+                <version>1.2-SNAPSHOT</version>
+                <configuration>
+                    <properties>${javacpp.platform}</properties>
+                    <propertyKeysAndValues>
+                        <property>
+                            <name>platform.root</name>
+                            <value>${javacpp.platform.root}</value>
+                        </property>
+                        <property>
+                            <name>platform.compiler</name>
+                            <value>${javacpp.platform.compiler}</value>
+                        </property>
+                    </propertyKeysAndValues>
+                    <classPath>${project.build.outputDirectory}</classPath>
+                    <includePath>${basedir}/cppbuild/${javacpp.platform}/include/</includePath>
+                    <linkPath>${basedir}/cppbuild/${javacpp.platform}/lib/</linkPath>
+                    <preloadPath>${basedir}/cppbuild/${javacpp.platform}/bin/</preloadPath>
+                </configuration>
+                <executions>
+                    <execution>
+                        <id>javacpp.parser</id>
+                        <phase>generate-sources</phase>
+                        <goals>
+                            <goal>build</goal>
+                        </goals>
+                        <configuration>
+                            <skip>${javacpp.parser.skip}</skip>
+                            <outputDirectory>${project.build.sourceDirectory}</outputDirectory>
+                            <classOrPackageName>org.bytedeco.javacpp.presets.*</classOrPackageName>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>javacpp.compiler</id>
+                        <phase>process-classes</phase>
+                        <goals>
+                            <goal>build</goal>
+                        </goals>
+                        <configuration>
+                            <skip>${javacpp.compiler.skip}</skip>
+                            <classOrPackageName>org.bytedeco.javacpp.*</classOrPackageName>
+                            <copyLibs>true</copyLibs>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
+    -->
+
     <dependencies>
+        <!--
         <dependency>
-            <groupId>org.bytedeco</groupId>
+            <groupId>org.bytedeco.javacpp-presets</groupId>
             <artifactId>tensorflow</artifactId>
-            <version>master-1.2-SNAPSHOT</version>
+            <version>[1.0,)</version>
         </dependency>
         <dependency>
             <groupId>org.bytedeco</groupId>
             <artifactId>javacpp</artifactId>
             <version>1.1</version>
         </dependency>
+        <dependency>
+            <groupId>org.python</groupId>
+            <artifactId>jython-standalone</artifactId>
+            <version>2.7.1b3</version>
+        </dependency>
+        -->
     </dependencies>
-
 
 </project>
