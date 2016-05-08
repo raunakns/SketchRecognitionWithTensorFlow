@@ -8,8 +8,13 @@ def start_socket(port):
 
     while True:
         connection, address = serversocket.accept()
+        receive_message()
         buf = connection.recv(64)
         connection.recv
         if len(buf) > 0:
             print buf
             break
+
+def receive_message(connection):
+    # how long the binary message is
+    totallen = connection.recv(4)
