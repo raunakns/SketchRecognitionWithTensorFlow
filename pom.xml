@@ -27,6 +27,7 @@
         <pmdVersion>3.3</pmdVersion>
         <failSafeVersion>2.18.1</failSafeVersion>
         <surefireVersion>2.17</surefireVersion>
+        <pythonOutputDirectory>${basedir}/src/main/python/generated_proto</pythonOutputDirectory>
 
         <!-- testing -->
         <testLevel>0</testLevel>
@@ -73,41 +74,23 @@
                 </configuration>
                 <executions>
                     <execution>
+                        <id>compile protobuf</id>
                         <phase>generate-sources</phase>
-                        <configuration>
-                            <checkStaleness>true</checkStaleness>
-                            <staleMillis>10000</staleMillis>
-                            <protocExecutable>${protocLocation}</protocExecutable>
-                        </configuration>
                         <goals>
                             <goal>compile</goal>
                             <goal>test-compile</goal>
-                            <goal>compile-python</goal>
+
                             <goal>test-compile-python</goal>
                         </goals>
                     </execution>
-                </executions>
-            </plugin>
-            <plugin>
-                <artifactId>maven-resources-plugin</artifactId>
-                <version>2.6</version>
-                <executions>
                     <execution>
-                        <id>copy-resources</id>
-                        <phase>process-resources</phase>
+                        <id>compile python</id>
+                        <phase>generate-sources</phase>
                         <goals>
-                            <goal>copy-resources</goal>
+                            <goal>compile-python</goal>
                         </goals>
                         <configuration>
-                            <outputDirectory>src/main/python/generated_proto</outputDirectory>
-                            <resources>
-                                <resource>
-                                    <directory>target/generated-sources/python</directory>
-                                    <includes>
-                                        <include> **/*.py</include>
-                                    </includes>
-                                </resource>
-                            </resources>
+                            <outputDirectory>${pythonOutputDirectory}</outputDirectory>
                         </configuration>
                     </execution>
                 </executions>
