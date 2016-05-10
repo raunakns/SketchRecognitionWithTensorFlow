@@ -1,6 +1,5 @@
 import tensorflow as tf
 from tensorflow_serving.session_bundle import exporter
-import generate_shapes_graph
 
 export_path = '../../../../models'
 print 'Exporting trained model to', export_path

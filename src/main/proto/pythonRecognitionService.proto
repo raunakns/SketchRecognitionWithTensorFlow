@@ -13,6 +13,7 @@ message GeneralRecognitionRequest {
         RecognitionUpdateList setUpdateList = 3;
         protobuf.srl.sketch.RecognitionTemplate template = 4;
     }
+    optional string message = 5;
 }
 
 enum RecognitionRequestType {
