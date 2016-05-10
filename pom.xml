@@ -79,17 +79,17 @@
                         <goals>
                             <goal>compile</goal>
                             <goal>test-compile</goal>
-
                             <goal>test-compile-python</goal>
                         </goals>
                     </execution>
                     <execution>
-                        <id>compile python</id>
-                        <phase>generate-sources</phase>
+                        <id>compile-python</id>
+                        <phase>initialize</phase>
                         <goals>
                             <goal>compile-python</goal>
                         </goals>
                         <configuration>
+                            <checkStaleness>false</checkStaleness>
                             <outputDirectory>${pythonOutputDirectory}</outputDirectory>
                         </configuration>
                     </execution>

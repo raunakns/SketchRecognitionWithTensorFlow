@@ -69,4 +69,4 @@ out/production/*
 **/log/*
 
 .gradle
-/src/main/python/generated_proto
+generated_proto/
