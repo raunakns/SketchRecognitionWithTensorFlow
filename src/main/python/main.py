@@ -1,10 +1,6 @@
 from connection import python_socket_server as connection
+from recognition import proto_handler as handler
 
 print "STARTING PYTHON SERVER"
 
-def callback(general_proto):
-    print general_proto.message
-    return "message was read!"
-
-
-connection.start_socket(8089, callback=callback)
+connection.start_socket(8089, callback=handler.message_processor)

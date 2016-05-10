@@ -84,11 +84,6 @@ service RecognitionService {
     rpc createUpdateList(RecognitionUpdateList) returns (RecognitionResponse);
 
     /**
-     * Inserts the solution into the submission server.
-     */
-    rpc addTemplate(protobuf.srl.sketch.RecognitionTemplate) returns (Noop);
-
-    /**
      * Reconizes the sketch and returns a recognition response.
      */
     rpc recognize(RecognitionUpdateList) returns (RecognitionResponse);
