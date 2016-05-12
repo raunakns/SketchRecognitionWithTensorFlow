@@ -1,3 +1,5 @@
+package recognition;
+
 import com.google.protobuf.InvalidProtocolBufferException;
 import connection.SocketConnection;
 import coursesketch.recognition.defaults.DefaultRecognition;
