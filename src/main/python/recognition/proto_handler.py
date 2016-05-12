@@ -12,9 +12,9 @@ def generate_shapes(recognition_template):
 
     for shape in shape_list:
         template = Sketch.RecognitionTemplate()
-        template.id = 'hi'
-        template.shape = shape
-        template_holder.generatedTemplates.add(template)
+        template.templateId = recognition_template.templateId
+        template.shape.CopyFrom(shape)
+        template_holder.generatedTemplates.extend([template])
     return template_holder
 
 def message_processor(general_proto):

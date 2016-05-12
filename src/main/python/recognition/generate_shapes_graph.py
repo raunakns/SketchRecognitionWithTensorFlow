@@ -1,16 +1,16 @@
 import math
 
-import sketch_utils
+import tensor_flow_utils
 
 
 def create_stretch_func(tf, points, stretch_type, amount):
     def f1():
-        return sketch_utils.stretch_around_center(tf, points, stretch_type, amount)
+        return tensor_flow_utils.stretch_around_center(tf, points, stretch_type, amount)
     return f1
 
 def create_rotate_func(tf, points, theta):
     def f1():
-        return sketch_utils.rotate_around_center(tf, points, theta)
+        return tensor_flow_utils.rotate_around_center(tf, points, theta)
     return f1
 
 def generate_shape_graph(tf, points):
@@ -25,9 +25,9 @@ def generate_shape_graph(tf, points):
 
     stretched = tf.cond(tf.reduce_all(tf.greater(is_stretch, true)),
                         create_stretch_func(tf, points, stretch_type, stretch_amount),
-                        sketch_utils.create_no_op_func(points))
+                        tensor_flow_utils.create_no_op_func(points))
     rotated = tf.cond(tf.reduce_all(tf.greater(is_rotate, true)),
                       create_rotate_func(tf, stretched, theta),
-                      sketch_utils.create_no_op_func(stretched))
+                      tensor_flow_utils.create_no_op_func(stretched))
 
     return rotated

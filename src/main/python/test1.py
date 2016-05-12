@@ -72,8 +72,14 @@ srl_obj.type = Sketch.SrlObject.STROKE
 shape.subComponents.extend([srl_obj])
 
 plt = plotter.get_plotter_instance()
-plotter.plot_stroke(plt, stroke)
+plotter.draw_shape(plt, shape=shape)
 plotter.save(plt, 'before.png')
 
 template.shape.CopyFrom(shape)
-proto_handler.generate_shapes(template)
+templateList = proto_handler.generate_shapes(template)
+i = 0
+for template in templateList.generatedTemplates:
+    plt = plotter.get_plotter_instance()
+    plotter.draw_shape(plt, shape=template.shape)
+    plotter.save(plt, 'after' + str(i) + '.png')
+    i += 1
