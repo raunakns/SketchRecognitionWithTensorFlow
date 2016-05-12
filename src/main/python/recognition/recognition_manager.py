@@ -1,10 +1,8 @@
 import tensorflow as tf
 import generate_shapes_graph as shape_generation
 from generated_proto import sketch_pb2 as Sketch
-import random
 
-
-class Recognition_manager():
+class Recognition_manager:
     def initialize(self):
         self.generation_graph = tf.Graph()
         with self.generation_graph.as_default():
@@ -22,68 +20,6 @@ class Recognition_manager():
                 result_tensor = session.run(self.generate_result_tensor, feed_dict={self.generate_head: points})
                 resulting_shapes.append(self.split_into_shape(self, points=self.convert_array_to_points(result_tensor), shape=shape))
         return resulting_shapes
-
-    def recursive_object_caller(self, srl_object, func, call_as_strokes=True, top=True):
-        """ Recursively calls a function on each shape using DFS
-            func is a function that is only called at the lowest shape level.
-            func is called with: list of points, shape/stroke it is being called on.
-            func should return a list of points.
-            return (result of func, shapeIt was called on)
-
-            if call_as_strokes is true then each call is expected to return a list of strokes
-            EXAMPLE:
-                Shape1: [shape2, stroke1, stroke2]
-                Shape2: [shape3, shape4, stroke3]
-                Shape3: [stroke4, stroke5]
-                Shape4: [stroke6]
-
-            IGNORED FOR NOW
-            Call Order (if call as strokes is false):
-                Shape3 (stroke4, stroke5)
-                Shape4 (stroke6)
-                Shape2 (shape3, shape4, stroke3)
-                Shape1 (shape2, stroke1, stroke2)
-
-            IMPLEMENTED
-            Call order (if call as strokes is true):
-                Shape3 (stroke4) returns str4
-                Shape3 (stroke5) returns str5
-                Shape3 (str4 + str 5) returns str45
-                Shape4 (stroke6) return (str6)
-                Shape2 (stroke3) returns str3
-                Shape2 (str45 + str6 + stroke3) return str[45]63
-                Shape1 (stroke1) returns str1
-                Shape1 (stroke2) returns str2
-                Shape1 (str1 + str2 + str[45]63) return str12[[45]63]
-               """
-        # this is a list of a list of SrlPoint coordinates
-        list_of_point_lists = []
-        shape = None
-        if srl_object.HasField('subComponents'):
-            shape = srl_object
-        else:
-            object = srl_object.object
-            type = srl_object.type
-            if type == Sketch.SrlObject.SHAPE:
-                shape = Sketch.SrlShape.parseFromString(object)
-            elif type == Sketch.SrlObject.STROKE:
-                stroke = Sketch.SrlStroke.parseFromString(object)
-                return func(stroke.points, stroke)
-        '''
-        for subObject in shape.subComponents:
-            list_of_point_lists.append(self.recursive_object_caller(subObject, func, call_as_strokes), top=False)
-
-        merged_list = []
-        for points in list_of_point_lists:
-            merged_list.extend(points)
-        point_result = func(merged_list, shape)
-
-        if not top:
-            return point_result
-        else:
-            return self.decode_points(point_result, srl_object)
-        '''
-        return None
 
     def create_points_from_shape(self, shape):
         ''' Creates random point list
