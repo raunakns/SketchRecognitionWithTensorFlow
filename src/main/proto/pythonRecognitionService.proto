@@ -8,11 +8,11 @@ option py_generic_services = true;
 
 message GeneralRecognitionRequest {
     required RecognitionRequestType requestType = 1;
-    oneof Request {
-        AddUpdateRequest addUpdate = 2;
-        RecognitionUpdateList setUpdateList = 3;
-        protobuf.srl.sketch.RecognitionTemplate template = 4;
-    }
+    //oneof Request {
+    optional AddUpdateRequest addUpdate = 2;
+    optional RecognitionUpdateList setUpdateList = 3;
+    optional protobuf.srl.sketch.RecognitionTemplate template = 4;
+    //}
     optional string message = 5;
 }
 
