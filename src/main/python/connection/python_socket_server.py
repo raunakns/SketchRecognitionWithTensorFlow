@@ -42,7 +42,8 @@ def send_message(connection, msg):
     print 'sending data back!'
     data = msg.SerializeToString()
     length = len(data)
-    print 'data has length ' + str(len(data))
+    print 'data has length ' + str(length)
+    print bin(length)[2:].zfill(32)
     pack1 = struct.pack('>I', length) # the first part of the message is length
     connection.sendall(pack1)
     connection.sendall(data)

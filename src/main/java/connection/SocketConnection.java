@@ -37,10 +37,16 @@ public class SocketConnection {
 
     public byte[] readIn() throws IOException {
         int length = in.readInt();
-        LOG.debug("Attempting to Read in {} bytes from python", length);
+        LOG.debug(String.format("%32s", Integer.toBinaryString(length)).replace(' ', '0'));
+        LOG.debug("Attempting to Read in [{}] bytes from python", length);
+        int totalRead = 0;
         byte[] array = new byte[length];
-        int success = in.read(array);
-        LOG.debug("Read finished with result: {}", success);
+        while(totalRead < length) {
+            int success = in.read(array, totalRead, length - totalRead);
+            totalRead += success;
+            LOG.debug("Reading data at {}%", (((double) totalRead) / ((double) length)) * 100.);
+        }
+        LOG.debug("Read finished with [{}] bytes read", length);
         return array;
     }
 }

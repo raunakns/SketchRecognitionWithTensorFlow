@@ -54,6 +54,7 @@ class Recognition_manager:
         def shape_func(sub_objects, shape):
             new_shape = Sketch.SrlShape()
             new_shape.id = 'newId' + shape.id
+            new_shape.time = 0
             for object in sub_objects:
                 srl_object = Sketch.SrlObject()
                 if srl_object.DESCRIPTOR.name == "SrlShape":
