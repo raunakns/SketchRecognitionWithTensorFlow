@@ -33,10 +33,10 @@ def call_shape_recursively(srl_object, stroke_func, shape_func, finished_func=No
     else:
         object = srl_object.object
         type = srl_object.type
-        if type == Sketch.SrlObject.SHAPE:
+        if type == Sketch.SHAPE:
             shape = Sketch.SrlShape()
             shape.ParseFromString(object)
-        elif type == Sketch.SrlObject.STROKE:
+        elif type == Sketch.STROKE:
 
             stroke = Sketch.SrlStroke()
             stroke.ParseFromString(object)

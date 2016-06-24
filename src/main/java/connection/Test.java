@@ -17,7 +17,7 @@ public class Test {
                 Sketch.RecognitionTemplate.newBuilder()
                         .setShape(Sketch.SrlShape.newBuilder().setTime(0).setId("id").addSubComponents(
                             Sketch.SrlObject.newBuilder()
-                                .setType(Sketch.SrlObject.ObjectType.STROKE)
+                                .setType(Sketch.ObjectType.STROKE)
                                 .setObject(makeStroke().toByteString())
                         ))
                         .setTemplateId("id"))

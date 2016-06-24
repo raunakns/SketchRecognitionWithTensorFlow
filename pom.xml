@@ -27,6 +27,7 @@
         <pmdVersion>3.3</pmdVersion>
         <failSafeVersion>2.18.1</failSafeVersion>
         <surefireVersion>2.17</surefireVersion>
+        <SketchRecognitionFrameworkVersion>3.0.2</SketchRecognitionFrameworkVersion>
         <pythonOutputDirectory>${basedir}/src/main/python/generated_proto</pythonOutputDirectory>
 
         <!-- testing -->
@@ -111,7 +112,7 @@
                                 <artifactItem>
                                     <groupId>com.github.dtracers</groupId>
                                     <artifactId>SketchRecognitionFramework</artifactId>
-                                    <version>-SNAPSHOT</version>
+                                    <version>${SketchRecognitionFrameworkVersion}</version>
                                     <type>jar</type>
                                     <overWrite>true</overWrite>
                                     <outputDirectory>${basedir}/src/main/python/generated_proto</outputDirectory>
@@ -265,7 +266,7 @@
         <dependency>
             <groupId>com.github.dtracers</groupId>
             <artifactId>SketchRecognitionFramework</artifactId>
-            <version>-SNAPSHOT</version>
+            <version>${SketchRecognitionFrameworkVersion}</version>
         </dependency>
         <dependency>
             <groupId>com.google.protobuf</groupId>

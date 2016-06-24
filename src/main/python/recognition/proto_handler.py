@@ -7,6 +7,7 @@ rec.initialize()
 
 def generate_shapes(recognition_template):
     """Returns {GeneratedTemplates}"""
+    print "generating shapes form recognition template"
     template_holder = rec_proto.GeneratedTemplates()
     shape_list = rec.generate_shape(recognition_template.shape)
 

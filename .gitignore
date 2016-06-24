@@ -70,3 +70,5 @@ out/production/*
 
 .gradle
 generated_proto/
+
+*.png

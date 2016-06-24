@@ -15,11 +15,21 @@ class Recognition_manager:
     def generate_shape(self, shape):
         points = self.create_points_from_shape(shape=shape)
         resulting_shapes = []
+        print "executing generated graph"
         with tf.Session(graph=self.generation_graph) as session:
             for i in range(0, 10):
-                result_tensor = session.run(self.generate_result_tensor, feed_dict={self.generate_head: points})
+               # print "running new shape generation graph"
 
-                resulting_shapes.append(self.split_points_into_shape(point_list=sketch_utils.convert_array_to_points(result_tensor),
+               # print "input"
+               # print points
+                result_tensor = session.run(self.generate_result_tensor, feed_dict={self.generate_head: points})
+               # print "tensor result"
+               # print(result_tensor)
+
+                result_points = sketch_utils.convert_array_to_points(result_tensor)
+               # print "point result"
+               # print result_points
+                resulting_shapes.append(self.split_points_into_shape(point_list=result_points,
                                                                      template_shape=shape))
         return resulting_shapes
 
@@ -58,9 +68,9 @@ class Recognition_manager:
             for object in sub_objects:
                 srl_object = Sketch.SrlObject()
                 if srl_object.DESCRIPTOR.name == "SrlShape":
-                    srl_object.type = Sketch.SrlObject.SHAPE
+                    srl_object.type = Sketch.SHAPE
                 else:
-                    srl_object.type = Sketch.SrlObject.STROKE
+                    srl_object.type = Sketch.STROKE
                 srl_object.object = object.SerializeToString()
                 new_shape.subComponents.extend([srl_object])
             return new_shape
