@@ -80,4 +80,8 @@ public class TensorFlowRecognition extends DefaultRecognition {
 
         return generatedTemplates.getGeneratedTemplatesList();
     }
+
+    public synchronized void train() {
+
+    }
 }

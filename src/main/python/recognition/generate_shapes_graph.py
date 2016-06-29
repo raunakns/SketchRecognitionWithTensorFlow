@@ -21,7 +21,6 @@ def create_shear_action(tf):
         return create_shear_func(tf, points, shear_type, shear_amount)
     return shear_callback
 
-
 # ROTATE
 def create_rotate_func(tf, points, theta):
     def rotate_action():
