@@ -5,6 +5,7 @@ import connection.SocketConnection;
 import coursesketch.recognition.defaults.DefaultRecognition;
 import coursesketch.recognition.framework.TemplateDatabaseInterface;
 import coursesketch.recognition.framework.exceptions.RecognitionException;
+import coursesketch.recognition.framework.exceptions.TemplateException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import protobuf.srl.commands.Commands;
@@ -50,11 +51,21 @@ public class TensorFlowRecognition extends DefaultRecognition {
         return null;
     }
 
+    @Override
+    public void trainTemplate(Sketch.RecognitionTemplate recognitionTemplate) throws TemplateException {
+
+    }
+
     @Override public Commands.SrlUpdateList recognize(final String s, final Commands.SrlUpdateList srlUpdateList) throws RecognitionException {
         return null;
     }
 
     @Override public Sketch.SrlSketch recognize(final String s, final Sketch.SrlSketch srlSketch) throws RecognitionException {
+        return null;
+    }
+
+    @Override
+    public List<Sketch.SrlInterpretation> recognize(String s, Sketch.RecognitionTemplate recognitionTemplate) throws RecognitionException {
         return null;
     }
 
@@ -79,6 +90,11 @@ public class TensorFlowRecognition extends DefaultRecognition {
         }
 
         return generatedTemplates.getGeneratedTemplatesList();
+    }
+
+    @Override
+    public void initialize() {
+
     }
 
     public synchronized void train() {

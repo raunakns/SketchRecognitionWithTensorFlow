@@ -27,8 +27,8 @@
         <pmdVersion>3.3</pmdVersion>
         <failSafeVersion>2.18.1</failSafeVersion>
         <surefireVersion>2.17</surefireVersion>
-        <SketchRecognitionFrameworkVersion>3.0.2</SketchRecognitionFrameworkVersion>
-        <DefaultRecognitionVersion>t1.1</DefaultRecognitionVersion>
+        <SketchRecognitionFrameworkVersion>3.0.3</SketchRecognitionFrameworkVersion>
+        <DefaultRecognitionVersion>t2.0</DefaultRecognitionVersion>
         <pythonOutputDirectory>${basedir}/src/main/python/generated_proto</pythonOutputDirectory>
 
         <!-- testing -->
