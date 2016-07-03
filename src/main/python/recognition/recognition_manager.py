@@ -89,7 +89,12 @@ class Recognition_manager:
         points = self.create_points_from_shape(shape)
         if self.recognizers.get(label) is None:
             self.recognizers[label] = recognizer.Recognizer(label)
-        return [self.recognizers[label].recognize(points)]
+        features = self.recognizers[label].create_features(points)
+        resultList = []
+        for rec in self.label_list:
+            resultList.append(self.recognizers[rec].train(label, features))
+        print resultList
+        return resultList
 
     def set_labels(self, label_list):
         self.label_list = label_list
@@ -105,4 +110,7 @@ class Recognition_manager:
         if self.recognizers.get(label) is None:
             self.recognizers[label] = recognizer.Recognizer(label)
             return
-        self.recognizers[label].train(label, points)
+        features = self.recognizers[label].create_features(points)
+        for rec in self.label_list:
+            print "training label " + rec
+            self.recognizers[rec].train(label, features)
