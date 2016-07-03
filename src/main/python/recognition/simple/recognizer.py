@@ -1,0 +1,125 @@
+import math
+import uuid
+import tensorflow as tf
+import recognition.tensor_flow_utils
+from recognition import sketch_utils as utils
+import numpy as np
+from generated_proto import sketch_pb2 as Sketch
+
+X = 0
+Y = 1
+ID = 2
+
+class Recognizer:
+    num_points = 32
+    classifier = None
+    training_bundle_features = None
+    training_bundle_targets = None
+    training_bundle_amount = 5
+    training_bundle_counter = 0
+
+    def __init__(self, label):
+        self.label = label
+        self.create_classifier()
+
+    def create_classifier(self):
+        hiddenLayers = [self.num_points * 2, self.num_points]
+        self.classifier = tf.contrib.learn.DNNClassifier(hidden_units=hiddenLayers)
+
+    @staticmethod
+    def distance(p1, p2):
+        dx = p2[X] - p1[X]
+        dy = p2[Y] - p1[Y]
+        return math.sqrt(dx * dx + dy * dy)
+
+    def path_length(self, points):
+        d = 0.0
+        for i in range(1, len(points)):
+            if points[i][ID] == (points[i - 1][ID]):
+                d += self.distance(points[i - 1], points[i])
+        return d
+
+    def resample(self, point_list, num_result):
+
+        if len(point_list) == num_result:
+            return point_list
+        # add ids to list
+        path_length = self.path_length(point_list)
+        interval_length = path_length / (num_result - 1) # interval length
+        combined_distance = 0.0
+        new_points = [point_list[0]]
+
+        i = 1
+        while i < len(point_list):
+            if point_list[i][ID] == point_list[i - 1][ID]:
+                next_point_difference = self.distance(point_list[i - 1], point_list[i])
+                if (combined_distance + next_point_difference) >= interval_length:
+                    qx = point_list[i - 1][X] + ((interval_length - combined_distance) / next_point_difference) * (point_list[i][X] - point_list[i - 1][X])
+                    qy = point_list[i - 1][Y] + ((interval_length - combined_distance) / next_point_difference) * (point_list[i][Y] - point_list[i - 1][Y])
+                    q = [qx, qy, point_list[i][ID]]
+                    new_points.append(q) # append new point 'q'
+                    point_list.insert(i, q) # insert 'q' at position i in point_list s.t. 'q' will be the next i
+                    combined_distance = 0
+                else:
+                    combined_distance += next_point_difference
+            i += 1
+        # sometimes we fall a rounding-error short of
+        # adding the last point, so add it if so
+        end = len(point_list) - 1
+        if len(new_points) == num_result - 1:
+            new_points.append([point_list[end][X], point_list[end][Y], point_list[end][ID]])
+        return new_points
+
+    def create_data(self, label, point_list):
+        points = self.resample(point_list, self.num_points)
+        utils.strip_ids_from_points(points)
+        value_class = 1 if label == self.label else 0
+        np_points = np.array(points)
+        x, y = np.hsplit(np_points, 2)
+        merged_points = np.concatenate((x, y), axis=0)
+        reshaped_points = np.reshape(merged_points, (1, self.num_points * 2))
+        target = np.reshape(np.array(value_class), (1, 1))
+        return reshaped_points, target
+
+    def bundle_train(self, label, point_list):
+        features, target = self.create_data(label, point_list)
+        if self.training_bundle_features is None:
+            self.training_bundle_features = features
+        else:
+            self.training_bundle_features = np.concatenate((self.training_bundle_features, features), axis = 0)
+
+        if self.training_bundle_targets is None:
+            self.training_bundle_targets = target
+        else:
+            self.training_bundle_targets = np.concatenate((self.training_bundle_targets, target), axis = 0)
+
+        print self.training_bundle_counter
+        if self.training_bundle_counter >= self.training_bundle_amount:
+            self.execute_train_bundle()
+        else:
+            self.training_bundle_counter += 1
+
+    # TODO: change back to this when the code is fixed
+    def train(self, label, point_list):
+        features, target = self.create_data(label, point_list)
+        self.classifier.fit(x=features, y=target, steps=1)
+
+    def execute_train_bundle(self):
+        print self.training_bundle_features
+        print self.training_bundle_targets
+        self.classifier.fit(x=self.training_bundle_features,
+                            y=self.training_bundle_targets, steps=self.training_bundle_counter)
+        self.training_bundle_features = None
+        self.training_bundle_targets = None
+        self.training_bundle_counter = 0
+
+    def recognize(self, point_list):
+        features, target = self.create_data(self.label, point_list)
+        predictions = self.classifier.predict(features)
+        print "recognition result"
+        print predictions
+        interpretation = Sketch.SrlInterpretation()
+        interpretation.label = self.label
+        interpretation.confidence = 0
+        return interpretation
+

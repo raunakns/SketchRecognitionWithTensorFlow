@@ -17,12 +17,16 @@ def make_point(x, y, time=0):
     new_point.time = time
     return new_point
 
-def convert_points_to_array(points):
+def convert_points_to_array(points, stroke):
     result = []
     for point in points:
-        result.append([point.x, point.y])
+        result.append([point.x, point.y, stroke.id])
     return result
 
+def strip_ids_from_points(points):
+    ID = 2
+    for point in points:
+        point.pop(ID)
 
 def call_shape_recursively(srl_object, stroke_func, shape_func, finished_func=None, top=True):
     ''' calls the objects recursively and calls stroke_func on strokes and then calls a shape_func on the list of results and the shape'''

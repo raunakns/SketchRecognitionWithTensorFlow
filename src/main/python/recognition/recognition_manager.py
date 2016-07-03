@@ -1,19 +1,27 @@
 import tensorflow as tf
-import generate_shapes_graph as shape_generation
 from generated_proto import sketch_pb2 as Sketch
-from gui import plotter
+
 import sketch_utils
+from generation import generate_shapes_graph as shape_generation
+from simple import recognizer
 
 class Recognition_manager:
+
+    classifier_list = {}
+    label_list = []
+
     def initialize(self):
         self.generation_graph = tf.Graph()
+        self.recognition_graph = tf.Graph()
         with self.generation_graph.as_default():
             self.generate_head = tf.placeholder(tf.float32)
             self.generate_result_tensor = shape_generation.generate_shape_graph(tf, self.generate_head)
             self.generation_graph.finalize()
+        self.recognizers = {}
 
     def generate_shape(self, shape):
         points = self.create_points_from_shape(shape=shape)
+        sketch_utils.strip_ids_from_points(points)
         resulting_shapes = []
         print "executing generated graph"
         with tf.Session(graph=self.generation_graph) as session:
@@ -37,7 +45,7 @@ class Recognition_manager:
         ''' Creates random point list
             Basically what this does is create a list of points or a list of lists of points based on random values.'''
         def stroke_func(points, stroke):
-            return sketch_utils.convert_points_to_array(points), stroke
+            return sketch_utils.convert_points_to_array(points, stroke), stroke
 
         def shape_func(sub_calls_results, shape):
             """converts list_o_points into a list of lists of points potentially... randomly merging points too"""
@@ -76,3 +84,25 @@ class Recognition_manager:
             return new_shape
 
         return sketch_utils.call_shape_recursively(stroke_func=stroke_func, shape_func=shape_func, srl_object=template_shape)
+
+    def recognize(self, label, shape):
+        points = self.create_points_from_shape(shape)
+        if self.recognizers.get(label) is None:
+            self.recognizers[label] = recognizer.Recognizer(label)
+        return [self.recognizers[label].recognize(points)]
+
+    def set_labels(self, label_list):
+        self.label_list = label_list
+
+    def create_classifiers(self):
+        self.classifier_list = {}
+        for label in self.label_list:
+            print 'Creating classifier' + label
+            self.recognizers[label] = recognizer.Recognizer(label)
+
+    def add_training_data(self, label, shape):
+        points = self.create_points_from_shape(shape)
+        if self.recognizers.get(label) is None:
+            self.recognizers[label] = recognizer.Recognizer(label)
+            return
+        self.recognizers[label].train(label, points)

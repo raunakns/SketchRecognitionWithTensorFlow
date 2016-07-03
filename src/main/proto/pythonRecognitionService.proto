@@ -13,7 +13,8 @@ message GeneralRecognitionRequest {
     optional RecognitionUpdateList setUpdateList = 3;
     optional protobuf.srl.sketch.RecognitionTemplate template = 4;
     //}
-    optional string message = 5;
+    optional string Message = 5;
+    repeated string labels = 6;
 }
 
 enum RecognitionRequestType {
@@ -22,6 +23,9 @@ enum RecognitionRequestType {
     ADD_TEMPLATE = 2;
     RECOGNIZE = 3;
     GENERATE_SHAPES = 4;
+    TRAIN = 5;
+    TEST = 6;
+    INIT = 7;
 }
 
 message AddUpdateRequest {
@@ -89,7 +93,17 @@ service RecognitionService {
     rpc recognize(RecognitionUpdateList) returns (RecognitionResponse);
 
     /**
+     * Reconizes the sketch and returns a recognition response.
+     */
+    rpc test(protobuf.srl.sketch.RecognitionTemplate) returns (protobuf.srl.sketch.RecognitionTemplate);
+
+    /**
      * Creates a list of potential template matches.
      */
     rpc generateTemplates(protobuf.srl.sketch.RecognitionTemplate) returns (GeneratedTemplates);
+
+    /**
+     * Creates a list of potential template matches.
+     */
+    rpc train(protobuf.srl.sketch.RecognitionTemplate) returns (Noop);
 }

@@ -1,0 +1,4 @@
+--index-url https://pypi.python.org/simple/
+
+-e .
+--find-links https://storage.googleapis.com/tensorflow/linux/cpu/tensorflow-0.8.0-cp27-none-linux_x86_64.whl#egg=tensorflow-0.8.0

@@ -1,11 +1,11 @@
 import math
-from recognition import proto_handler
-from generated_proto import sketch_pb2 as Sketch
 import numpy as np
 import tensorflow as tf
-from recognition import generate_shapes_graph
 import uuid
+from generated_proto import sketch_pb2 as Sketch
+
 from gui import plotter
+from recognition import proto_handler
 from recognition import tensor_flow_utils
 
 tf.reset_default_graph()
