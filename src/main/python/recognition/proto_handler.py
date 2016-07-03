@@ -33,6 +33,7 @@ def test(recognition_template):
     result = Sketch.RecognitionTemplate()
     result.templateId = recognition_template.templateId
     interpretations = rec.recognize(recognition_template.interpretation.label, recognition_template.shape)
+    print interpretations
     for interp in interpretations:
         result.interpretations.extend([interp])
 

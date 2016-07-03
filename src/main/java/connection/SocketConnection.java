@@ -32,21 +32,21 @@ public class SocketConnection {
         byte[] length = ByteBuffer.allocate(4).order(ByteOrder.LITTLE_ENDIAN).putInt(output.length).array();
         out.write(length);
         out.write(output);
-        LOG.debug("Wrote out {} bytes to python", output.length);
+        // LOG.debug("Wrote out {} bytes to python", output.length);
     }
 
     public byte[] readIn() throws IOException {
         int length = in.readInt();
-        LOG.debug(String.format("%32s", Integer.toBinaryString(length)).replace(' ', '0'));
-        LOG.debug("Attempting to Read in [{}] bytes from python", length);
+        // LOG.debug(String.format("%32s", Integer.toBinaryString(length)).replace(' ', '0'));
+        // LOG.debug("Attempting to Read in [{}] bytes from python", length);
         int totalRead = 0;
         byte[] array = new byte[length];
         while(totalRead < length) {
             int success = in.read(array, totalRead, length - totalRead);
             totalRead += success;
-            LOG.debug("Reading data at {}%", (((double) totalRead) / ((double) length)) * 100.);
+            // LOG.debug("Reading data at {}%", (((double) totalRead) / ((double) length)) * 100.);
         }
-        LOG.debug("Read finished with [{}] bytes read", length);
+        // LOG.debug("Read finished with [{}] bytes read", length);
         return array;
     }
 }

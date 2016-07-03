@@ -23,7 +23,7 @@ class Recognizer:
         self.create_classifier()
 
     def create_classifier(self):
-        hiddenLayers = [self.num_points * 2, self.num_points]
+        hiddenLayers = [self.num_points, self.num_points / 2]
         self.classifier = tf.contrib.learn.DNNClassifier(hidden_units=hiddenLayers)
 
     @staticmethod
@@ -70,16 +70,19 @@ class Recognizer:
             new_points.append([point_list[end][X], point_list[end][Y], point_list[end][ID]])
         return new_points
 
-    def create_data(self, label, point_list):
+    def create_features(self, point_list):
         points = self.resample(point_list, self.num_points)
         utils.strip_ids_from_points(points)
-        value_class = 1 if label == self.label else 0
         np_points = np.array(points)
         x, y = np.hsplit(np_points, 2)
         merged_points = np.concatenate((x, y), axis=0)
         reshaped_points = np.reshape(merged_points, (1, self.num_points * 2))
+        return reshaped_points
+
+    def create_target(self, label):
+        value_class = 1 if label == self.label else 0
         target = np.reshape(np.array(value_class), (1, 1))
-        return reshaped_points, target
+        return target
 
     def bundle_train(self, label, point_list):
         features, target = self.create_data(label, point_list)
@@ -100,8 +103,8 @@ class Recognizer:
             self.training_bundle_counter += 1
 
     # TODO: change back to this when the code is fixed
-    def train(self, label, point_list):
-        features, target = self.create_data(label, point_list)
+    def train(self, label, features):
+        target = self.create_target(label)
         self.classifier.fit(x=features, y=target, steps=1)
 
     def execute_train_bundle(self):
@@ -113,13 +116,12 @@ class Recognizer:
         self.training_bundle_targets = None
         self.training_bundle_counter = 0
 
-    def recognize(self, point_list):
-        features, target = self.create_data(self.label, point_list)
+    def recognize(self, features):
         predictions = self.classifier.predict(features)
-        print "recognition result"
+        print "recognition result for label " + self.label
         print predictions
         interpretation = Sketch.SrlInterpretation()
         interpretation.label = self.label
-        interpretation.confidence = 0
+        interpretation.confidence = predictions[0]
         return interpretation
 

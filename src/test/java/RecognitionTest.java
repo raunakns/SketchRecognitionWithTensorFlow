@@ -25,16 +25,15 @@ public class RecognitionTest {
         RecognitionDatabaseClient client = new RecognitionDatabaseClient(databaseUrl, "Recognition");
         client.onStartDatabase();
         TensorFlowRecognition rec1 = new TensorFlowRecognition(client);
-        // BasicRecognition rec2 = new BasicRecognition(client);
+        BasicRecognition rec2 = new BasicRecognition(client);
 
         rec1.initialize();
-        // rec2.initialize();
+        rec2.initialize();
 
         System.out.println("Running on recognition templates");
-        RecognitionTesting tester = new RecognitionTesting(client, rec1);
+        RecognitionTesting tester = new RecognitionTesting(client, rec1, rec2);
         final List<Sketch.SrlInterpretation> allInterpretations = client.getAllInterpretations();
-        List<Sketch.RecognitionTemplate> templates = client.getTemplate(allInterpretations.get(0)).subList(0, 50);
-        List<RecognitionScoreMetrics> recognitionScoreMetrics = tester.testAgainstTemplates(templates);
+        List<RecognitionScoreMetrics> recognitionScoreMetrics = tester.testAgainstAllTemplates();
         System.out.println("done recognizer");
         for (RecognitionScoreMetrics scoreMetrics : recognitionScoreMetrics) {
             scoreMetrics.computeRecognitionMetrics();
