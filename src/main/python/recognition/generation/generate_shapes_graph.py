@@ -1,6 +1,6 @@
 import math
 
-import tensor_flow_utils
+import recognition.tensor_flow_utils
 
 #########################
 #START ACTIONS
@@ -10,7 +10,7 @@ import tensor_flow_utils
 def create_shear_func(tf, points, shear_type, amount):
     def shear_action():
         print "creating shear action"
-        return tensor_flow_utils.shear_around_center(tf, points, shear_type, amount)
+        return recognition.tensor_flow_utils.shear_around_center(tf, points, shear_type, amount)
     return shear_action
 
 def create_shear_action(tf):
@@ -25,7 +25,7 @@ def create_shear_action(tf):
 def create_rotate_func(tf, points, theta):
     def rotate_action():
         print "creating stretch action"
-        return tensor_flow_utils.rotate_around_center(tf, points, theta)
+        return recognition.tensor_flow_utils.rotate_around_center(tf, points, theta)
     return rotate_action
 
 def create_rotate_action(tf):
@@ -44,7 +44,7 @@ def create_rotate_action(tf):
 def create_stretch_func(tf, points, stretch_type, amount):
     def stretch_action():
         print "creating stretch action"
-        return tensor_flow_utils.stretch_around_center(tf, points, stretch_type, amount)
+        return recognition.tensor_flow_utils.stretch_around_center(tf, points, stretch_type, amount)
     return stretch_action
 
 def create_stretch_action(tf):
@@ -68,7 +68,7 @@ def create_case_statement(tf, statementList):
         print "creating switch statement"
         for i in range(len(statementList)):
             create_case(tf, caseDict, i, actionCase, statementList[i](points))
-        return tf.case(caseDict, tensor_flow_utils.create_no_op_func(points), name="switch_statement")
+        return tf.case(caseDict, recognition.tensor_flow_utils.create_no_op_func(points), name="switch_statement")
     return f1
 
 def create_case(tf, caseDict, caseNumber, dynamicNumber, caseFunc):
