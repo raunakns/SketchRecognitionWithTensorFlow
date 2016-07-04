@@ -26,6 +26,7 @@ enum RecognitionRequestType {
     TRAIN = 5;
     TEST = 6;
     INIT = 7;
+    FINISH_TRAINING = 8;
 }
 
 message AddUpdateRequest {
@@ -69,7 +70,7 @@ message GeneratedTemplates {
 }
 
 message Noop {
-
+    optional bool success = 1 [default = true];
 }
 
 /**

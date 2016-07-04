@@ -1,5 +1,6 @@
 import tensorflow as tf
 from generated_proto import sketch_pb2 as Sketch
+from generated_proto import pythonRecognitionService_pb2 as rec_proto
 
 import sketch_utils
 from generation import generate_shapes_graph as shape_generation
@@ -87,16 +88,20 @@ class Recognition_manager:
 
     def recognize(self, label, shape):
         points = self.create_points_from_shape(shape)
-        if len(points) < 10:
+        if len(points) < 4:
             return []
         if self.recognizers.get(label) is None:
             self.recognizers[label] = recognizer.Recognizer(label)
         features = self.recognizers[label].create_features(points)
+        if features is None:
+            print 'invalid recognizing data'
+            return []
         resultList = []
         for rec in self.label_list:
-            resultList.append(self.recognizers[rec].recognize(label, features))
-        print resultList
-        return resultList
+            resultList.append(self.recognizers[rec].recognize(features))
+        newlist = sorted(resultList, key=lambda k: -k.confidence)
+        #print newlist
+        return newlist
 
     def set_labels(self, label_list):
         self.label_list = label_list
@@ -109,11 +114,23 @@ class Recognition_manager:
 
     def add_training_data(self, label, shape):
         points = self.create_points_from_shape(shape)
-        if len(points) < 10:
-            return
+        result = rec_proto.Noop()
+        if len(points) < 4:
+            result.success = False
+            print 'invalid training data'
+            return result
         if self.recognizers.get(label) is None:
             self.recognizers[label] = recognizer.Recognizer(label)
+            self.label_list.append(label)
         features = self.recognizers[label].create_features(points)
+        if features is None:
+            result.success = False
+            print 'invalid training data'
+            return result
         for rec in self.label_list:
-            print "training label " + rec
             self.recognizers[rec].train(label, features)
+        return result
+
+    def finish_training(self):
+        for rec in self.label_list:
+            self.recognizers[rec].finish_training()

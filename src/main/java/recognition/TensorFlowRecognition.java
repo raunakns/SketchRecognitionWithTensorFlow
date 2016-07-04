@@ -3,6 +3,7 @@ package recognition;
 import com.google.common.collect.Lists;
 import com.google.protobuf.InvalidProtocolBufferException;
 import connection.SocketConnection;
+import coursesketch.database.ShapeConverter;
 import coursesketch.recognition.defaults.DefaultRecognition;
 import coursesketch.recognition.framework.TemplateDatabaseInterface;
 import coursesketch.recognition.framework.exceptions.RecognitionException;
@@ -16,13 +17,14 @@ import protobuf.srl.sketch.Sketch;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 /**
  * Created by David Windows on 5/10/2016.
  */
 public class TensorFlowRecognition extends DefaultRecognition {
 
-    public static final int PYTHON_PORT = 8089;
+    public static final int PYTHON_PORT = 8053;
 
     /**
      * Declaration and Definition of Logger.
@@ -56,9 +58,19 @@ public class TensorFlowRecognition extends DefaultRecognition {
 
     @Override
     public synchronized void trainTemplate(Sketch.RecognitionTemplate recognitionTemplate) throws TemplateException {
+        final Sketch.RecognitionTemplate.Builder builder = recognitionTemplate.toBuilder();
+        if (recognitionTemplate.hasStroke()) {
+            Sketch.SrlStroke stroke = recognitionTemplate.getStroke();
+            Sketch.SrlObject object = Sketch.SrlObject.newBuilder().setType(Sketch.ObjectType.STROKE)
+                    .setObject(stroke.toByteString()).build();
+            Sketch.SrlShape shape = Sketch.SrlShape.newBuilder().setId(UUID.randomUUID().toString())
+                    .setTime(0).addSubComponents(object).build();
+            builder.clearStroke();
+            builder.setShape(shape);
+        }
         final PythonRecognitionService.GeneralRecognitionRequest recognitionRequest = PythonRecognitionService.GeneralRecognitionRequest.newBuilder()
                 .setRequestType(PythonRecognitionService.RecognitionRequestType.TRAIN)
-                .setTemplate(recognitionTemplate).build();
+                .setTemplate(builder).build();
         try {
             pythonConnection.writeOut(recognitionRequest.toByteArray());
         } catch (IOException e) {
@@ -74,8 +86,13 @@ public class TensorFlowRecognition extends DefaultRecognition {
             throw new TemplateException("Error reading response from python while generating shapes", e);
         }
         if (noop == null) {
-            LOG.warn("No return value created");
+            throw new TemplateException("No return value created");
         }
+        /*
+        if (noop.getSuccess() == false) {
+            throw new TemplateException("Invalid data for the given template");
+        }
+        */
     }
 
     @Override public Commands.SrlUpdateList recognize(final String s, final Commands.SrlUpdateList srlUpdateList) throws RecognitionException {
@@ -88,9 +105,19 @@ public class TensorFlowRecognition extends DefaultRecognition {
 
     @Override
     public synchronized List<Sketch.SrlInterpretation> recognize(String s, Sketch.RecognitionTemplate recognitionTemplate) throws RecognitionException {
+        final Sketch.RecognitionTemplate.Builder builder = recognitionTemplate.toBuilder();
+        if (recognitionTemplate.hasStroke()) {
+            Sketch.SrlStroke stroke = recognitionTemplate.getStroke();
+            Sketch.SrlObject object = Sketch.SrlObject.newBuilder().setType(Sketch.ObjectType.STROKE)
+                    .setObject(stroke.toByteString()).build();
+            Sketch.SrlShape shape = Sketch.SrlShape.newBuilder().setId(UUID.randomUUID().toString())
+                    .setTime(0).addSubComponents(object).build();
+            builder.clearStroke();
+            builder.setShape(shape);
+        }
         final PythonRecognitionService.GeneralRecognitionRequest recognitionRequest = PythonRecognitionService.GeneralRecognitionRequest.newBuilder()
                 .setRequestType(PythonRecognitionService.RecognitionRequestType.TEST)
-                .setTemplate(recognitionTemplate).build();
+                .setTemplate(builder).build();
         try {
             pythonConnection.writeOut(recognitionRequest.toByteArray());
         } catch (IOException e) {
@@ -157,6 +184,28 @@ public class TensorFlowRecognition extends DefaultRecognition {
             throw new TemplateException("Error reading response from python while generating shapes", e);
         }
         LOG.debug("LABELS HAVE BEEN ADDED", noop);
+    }
+
+    @Override
+    public void finishTraining() throws RecognitionException {
+        LOG.debug("telling training to finish up");
+        final PythonRecognitionService.GeneralRecognitionRequest recognitionRequest = PythonRecognitionService.GeneralRecognitionRequest.newBuilder()
+                .setRequestType(PythonRecognitionService.RecognitionRequestType.FINISH_TRAINING).build();
+        try {
+            pythonConnection.writeOut(recognitionRequest.toByteArray());
+        } catch (IOException e) {
+            throw new TemplateException("Error writing out message to python while generating shapes", e);
+        }
+        PythonRecognitionService.Noop noop;
+        try {
+            noop = PythonRecognitionService.Noop
+                    .parseFrom(pythonConnection.readIn());
+        } catch (InvalidProtocolBufferException e) {
+            throw new TemplateException("Error parsing response from python while generating shapes", e);
+        } catch (IOException e) {
+            throw new TemplateException("Error reading response from python while generating shapes", e);
+        }
+        LOG.debug("Training has been completed", noop);
     }
 
     @Override

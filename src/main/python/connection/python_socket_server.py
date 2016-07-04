@@ -11,7 +11,7 @@ def start_socket(port, callback):
         connection, address = serversocket.accept()
         while True:
             process_message(connection, callback=callback)
-            print "read one message"
+            #print "read one message"
 
 def recvall(socket, length):
     # Helper function to recv n bytes or return None if EOF is hit
@@ -28,8 +28,8 @@ def process_message(connection, callback):
     totallen = connection.recv(4)
 
     length2 = struct.unpack("<I", totallen)[0]
-    print "value of message"
-    print length2
+    #print "value of message"
+    #print length2
 
     # the protobuf message
     message = recvall(connection, length2)
@@ -39,12 +39,12 @@ def process_message(connection, callback):
     send_message(connection=connection, msg=result)
 
 def send_message(connection, msg):
-    print 'sending data back!'
+    #print 'sending data back!'
     data = msg.SerializeToString()
     length = len(data)
-    print 'data has length ' + str(length)
-    print bin(length)[2:].zfill(32)
+    #print 'data has length ' + str(length)
+    #print bin(length)[2:].zfill(32)
     pack1 = struct.pack('>I', length) # the first part of the message is length
     connection.sendall(pack1)
     connection.sendall(data)
-    print 'data has been sent'
+    #print 'data has been sent'

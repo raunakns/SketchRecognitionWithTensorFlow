@@ -15,7 +15,7 @@ class Recognizer:
     classifier = None
     training_bundle_features = None
     training_bundle_targets = None
-    training_bundle_amount = 5
+    training_bundle_amount = 1000
     training_bundle_counter = 0
 
     def __init__(self, label):
@@ -40,12 +40,11 @@ class Recognizer:
         return d
 
     def resample(self, point_list, num_result):
-
         if len(point_list) == num_result:
             return point_list
         # add ids to list
         path_length = self.path_length(point_list)
-        interval_length = path_length / (num_result - 1) # interval length
+        interval_length = path_length / (num_result - 1)  # interval length
         combined_distance = 0.0
         new_points = [point_list[0]]
 
@@ -53,6 +52,9 @@ class Recognizer:
         while i < len(point_list):
             if point_list[i][ID] == point_list[i - 1][ID]:
                 next_point_difference = self.distance(point_list[i - 1], point_list[i])
+                if next_point_difference == 0.0:
+                    point_list.pop(i)
+                    continue
                 if (combined_distance + next_point_difference) >= interval_length:
                     qx = point_list[i - 1][X] + ((interval_length - combined_distance) / next_point_difference) * (point_list[i][X] - point_list[i - 1][X])
                     qy = point_list[i - 1][Y] + ((interval_length - combined_distance) / next_point_difference) * (point_list[i][Y] - point_list[i - 1][Y])
@@ -72,6 +74,11 @@ class Recognizer:
 
     def create_features(self, point_list):
         points = self.resample(point_list, self.num_points)
+        while len(points) != self.num_points:
+            print 'less than 32'
+            if len(points) <= self.num_points / 4:
+                return None
+            points = self.resample(points, self.num_points)
         utils.strip_ids_from_points(points)
         np_points = np.array(points)
         x, y = np.hsplit(np_points, 2)
@@ -84,8 +91,8 @@ class Recognizer:
         target = np.reshape(np.array(value_class), (1, 1))
         return target
 
-    def bundle_train(self, label, point_list):
-        features, target = self.create_data(label, point_list)
+    def train(self, label, features):
+        target = self.create_target(label)
         if self.training_bundle_features is None:
             self.training_bundle_features = features
         else:
@@ -96,30 +103,30 @@ class Recognizer:
         else:
             self.training_bundle_targets = np.concatenate((self.training_bundle_targets, target), axis = 0)
 
-        print self.training_bundle_counter
         if self.training_bundle_counter >= self.training_bundle_amount:
             self.execute_train_bundle()
         else:
             self.training_bundle_counter += 1
 
     # TODO: change back to this when the code is fixed
-    def train(self, label, features):
+    def single_train(self, label, features):
         target = self.create_target(label)
         self.classifier.fit(x=features, y=target, steps=1)
 
     def execute_train_bundle(self):
-        print self.training_bundle_features
-        print self.training_bundle_targets
+        print 'batch training: ' + self.label
         self.classifier.fit(x=self.training_bundle_features,
                             y=self.training_bundle_targets, steps=self.training_bundle_counter)
         self.training_bundle_features = None
         self.training_bundle_targets = None
         self.training_bundle_counter = 0
 
+    def finish_training(self):
+        if self.training_bundle_counter > 0:
+            self.execute_train_bundle()
+
     def recognize(self, features):
         predictions = self.classifier.predict(features)
-        print "recognition result for label " + self.label
-        print predictions
         interpretation = Sketch.SrlInterpretation()
         interpretation.label = self.label
         interpretation.confidence = predictions[0]

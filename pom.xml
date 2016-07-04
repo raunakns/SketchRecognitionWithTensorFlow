@@ -27,8 +27,8 @@
         <pmdVersion>3.3</pmdVersion>
         <failSafeVersion>2.18.1</failSafeVersion>
         <surefireVersion>2.17</surefireVersion>
-        <SketchRecognitionFrameworkVersion>3.1.0</SketchRecognitionFrameworkVersion>
-        <DefaultRecognitionVersion>t2.2</DefaultRecognitionVersion>
+        <SketchRecognitionFrameworkVersion>3.1.1</SketchRecognitionFrameworkVersion>
+        <DefaultRecognitionVersion>t2.3</DefaultRecognitionVersion>
         <pythonOutputDirectory>${basedir}/src/main/python/generated_proto</pythonOutputDirectory>
 
         <!-- testing -->
@@ -66,6 +66,34 @@
                 </configuration>
             </plugin>
             <plugin>
+                <artifactId>maven-clean-plugin</artifactId>
+                <version>3.0.0</version>
+                <executions>
+                    <execution>
+                        <id>save the init</id>
+                        <phase>clean</phase>
+                        <goals>
+                            <goal>clean</goal>
+                        </goals>
+                        <configuration>
+                            <filesets>
+                                <fileset>
+                                    <directory>src/main/python/generated_proto</directory>
+                                    <followSymlinks>false</followSymlinks>
+                                    <useDefaultExcludes>true</useDefaultExcludes>
+                                    <includes>
+                                        <include>*.py</include>
+                                    </includes>
+                                    <excludes>
+                                        <exclude>__init__.py</exclude>
+                                    </excludes>
+                                </fileset>
+                            </filesets>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
                 <groupId>org.xolstice.maven.plugins</groupId>
                 <artifactId>protobuf-maven-plugin</artifactId>
                 <version>0.5.0</version>
@@ -91,7 +119,7 @@
                             <goal>compile-python</goal>
                         </goals>
                         <configuration>
-                            <checkStaleness>false</checkStaleness>
+                            <clearOutputDirectory>false</clearOutputDirectory>
                             <outputDirectory>${pythonOutputDirectory}</outputDirectory>
                         </configuration>
                     </execution>
