@@ -34,9 +34,12 @@ public class RecognitionTest {
 
         System.out.println("Running on recognition templates");
         RecognitionTesting tester = new RecognitionTesting(client, rec1);
+        List<Sketch.SrlInterpretation> allInterpretations = client.getAllInterpretations();
+        List<Sketch.RecognitionTemplate> templatse = client.getTemplate(allInterpretations.get(2));
+        templatse.addAll(client.getTemplate(allInterpretations.get(2)));
         List<RecognitionScoreMetrics> recognitionScoreMetrics =
                 tester.testAgainstAllTemplates();
-                // tester.testAgainstTemplates(client.getTemplate(allInterpretations.get(5)).subList(0, 50));
+                // tester.testAgainstTemplates(templatse);
         System.out.println("done recognizer");
         for (RecognitionScoreMetrics scoreMetrics : recognitionScoreMetrics) {
             System.out.println(scoreMetrics.getSimpleName());

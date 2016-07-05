@@ -24,7 +24,7 @@ import java.util.UUID;
  */
 public class TensorFlowRecognition extends DefaultRecognition {
 
-    public static final int PYTHON_PORT = 8053;
+    public static final int PYTHON_PORT = 8089;
 
     /**
      * Declaration and Definition of Logger.

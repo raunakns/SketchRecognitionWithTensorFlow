@@ -23,8 +23,15 @@ class Recognizer:
         self.create_classifier()
 
     def create_classifier(self):
-        hiddenLayers = [self.num_points, self.num_points / 2]
-        self.classifier = tf.contrib.learn.DNNClassifier(hidden_units=hiddenLayers)
+        hiddenLayers = [self.num_points * 2, self.num_points, self.num_points / 2]
+        #x = tf.contrib.layers.real_valued_column("X")
+        #y = tf.contrib.layers.real_valued_column("X")
+        #dnn_feature_columns=[x, y]
+        optimizer = tf.train.FtrlOptimizer(
+            learning_rate=0.1,
+            l1_regularization_strength=0.001,
+            l2_regularization_strength=0.001)
+        self.classifier = tf.contrib.learn.DNNRegressor(hidden_units=hiddenLayers)
 
     @staticmethod
     def distance(p1, p2):
@@ -87,7 +94,8 @@ class Recognizer:
         return reshaped_points
 
     def create_target(self, label):
-        value_class = 1 if label == self.label else 0
+        # big punishment to show difference between 0 and 1
+        value_class = 1.0 if label == self.label else -1.0
         target = np.reshape(np.array(value_class), (1, 1))
         return target
 
@@ -127,8 +135,9 @@ class Recognizer:
 
     def recognize(self, features):
         predictions = self.classifier.predict(features)
+        # print self.classifier.predict_proba(features)
         interpretation = Sketch.SrlInterpretation()
         interpretation.label = self.label
-        interpretation.confidence = predictions[0]
+        interpretation.confidence = float(predictions[0])
         return interpretation
 

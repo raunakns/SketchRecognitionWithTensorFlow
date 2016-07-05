@@ -1,4 +1,5 @@
 import tensorflow as tf
+import math
 from generated_proto import sketch_pb2 as Sketch
 from generated_proto import pythonRecognitionService_pb2 as rec_proto
 
@@ -100,8 +101,10 @@ class Recognition_manager:
         for rec in self.label_list:
             resultList.append(self.recognizers[rec].recognize(features))
         newlist = sorted(resultList, key=lambda k: -k.confidence)
+        for interpretation in newlist:
+            interpretation.confidence = math.tanh(max(0.0, interpretation.confidence))
         #print newlist
-        return newlist
+        return newlist[:5]
 
     def set_labels(self, label_list):
         self.label_list = label_list
@@ -116,7 +119,7 @@ class Recognition_manager:
         points = self.create_points_from_shape(shape)
         result = rec_proto.Noop()
         if len(points) < 4:
-            result.success = False
+            #result.success = False
             print 'invalid training data'
             return result
         if self.recognizers.get(label) is None:
@@ -124,7 +127,7 @@ class Recognition_manager:
             self.label_list.append(label)
         features = self.recognizers[label].create_features(points)
         if features is None:
-            result.success = False
+            #result.success = False
             print 'invalid training data'
             return result
         for rec in self.label_list:

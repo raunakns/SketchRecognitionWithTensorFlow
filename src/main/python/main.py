@@ -3,4 +3,4 @@ from proto_decoder import proto_handler as handler
 
 print "STARTING PYTHON SERVER"
 
-connection.start_socket(8053, callback=handler.message_processor)
+connection.start_socket(8089, callback=handler.message_processor)
