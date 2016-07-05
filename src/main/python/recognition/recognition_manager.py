@@ -44,21 +44,7 @@ class Recognition_manager:
         return resulting_shapes
 
     def create_points_from_shape(self, shape):
-        ''' Creates random point list
-            Basically what this does is create a list of points or a list of lists of points based on random values.'''
-        def stroke_func(points, stroke):
-            return sketch_utils.convert_points_to_array(points, stroke), stroke
-
-        def shape_func(sub_calls_results, shape):
-            """converts list_o_points into a list of lists of points potentially... randomly merging points too"""
-            result = []
-            #for now lets just merge them all!
-
-            for object in sub_calls_results:
-                result.extend(object[0])
-            return result, shape
-
-        return sketch_utils.call_shape_recursively(stroke_func=stroke_func, shape_func=shape_func, srl_object=shape)[0]
+        return sketch_utils.create_points_from_shape(shape)
 
     def split_points_into_shape(self, point_list, template_shape):
         current_index = [0]

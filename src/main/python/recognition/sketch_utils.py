@@ -28,6 +28,23 @@ def strip_ids_from_points(points):
     for point in points:
         point.pop(ID)
 
+def create_points_from_shape(shape):
+    ''' Creates random point list
+        Basically what this does is create a list of points or a list of lists of points based on random values.'''
+    def stroke_func(points, stroke):
+        return convert_points_to_array(points, stroke), stroke
+
+    def shape_func(sub_calls_results, shape):
+        """converts list_o_points into a list of lists of points potentially... randomly merging points too"""
+        result = []
+        #for now lets just merge them all!
+
+        for object in sub_calls_results:
+            result.extend(object[0])
+        return result, shape
+
+    return call_shape_recursively(stroke_func=stroke_func, shape_func=shape_func, srl_object=shape)[0]
+
 def call_shape_recursively(srl_object, stroke_func, shape_func, finished_func=None, top=True):
     ''' calls the objects recursively and calls stroke_func on strokes and then calls a shape_func on the list of results and the shape'''
     values_of_results = []

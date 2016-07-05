@@ -1,6 +1,8 @@
 from generated_proto import pythonRecognitionService_pb2 as rec_proto
 import recognition.recognition_manager
 from generated_proto import sketch_pb2 as Sketch
+from gui import plotter
+import os
 
 rec = recognition.recognition_manager.Recognition_manager()
 rec.initialize()
@@ -20,7 +22,17 @@ def generate_shapes(recognition_template):
 
 def train_shape(recognition_template):
     #print recognition_template
-    return rec.add_training_data(recognition_template.interpretation.label, recognition_template.shape)
+    instance = plotter.get_plotter_instance()
+    plotter.plot_template(instance, recognition_template)
+    path = '../resources/images/' + recognition_template.interpretation.label
+    try:
+        os.mkdir(path, 0755)
+    except OSError:
+        #do notbhing
+        i = 1
+    plotter.save(instance, recognition_template.templateId + '.png', path=path)
+    return rec_proto.Noop()
+    # return rec.add_training_data(recognition_template.interpretation.label, recognition_template.shape)
 
 def init(labels):
     no_op = rec_proto.Noop()
