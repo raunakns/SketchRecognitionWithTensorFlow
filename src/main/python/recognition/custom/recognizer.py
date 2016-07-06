@@ -1,10 +1,10 @@
 import math
 import uuid
 import tensorflow as tf
-import recognition.tensor_flow_utils
 from recognition import sketch_utils as utils
 import numpy as np
 from generated_proto import sketch_pb2 as Sketch
+import custom_recogntion_utilities as training_helpers
 
 X = 0
 Y = 1
@@ -19,20 +19,41 @@ class Recognizer:
     training_bundle_counter = 0
     X_placeholder = None
     Y_placeholder = None
+    num_classes = 2
+    session = None
 
     def __init__(self, label):
         self.label = label
-        self.create_classifier()
+        self.graph = tf.Graph()
+        with self.graph.as_default() as g:
+            with g.name_scope(label) as scope:
+                self.X_placeholder = tf.placeholder(tf.float32, shape=[self.num_points], name="X_values")
+                self.Y_placeholder = tf.placeholder(tf.float32, shape=[self.num_points], name="Y_values")
+                x = tf.contrib.layers.real_valued_column("X")
+                y = tf.contrib.layers.real_valued_column("Y")
+                first_layer = tf.contrib.layers.input_from_feature_columns(columns_to_tensors={"X":self.X_placeholder,
+                                                                           "Y":self.Y_placeholder},
+                                                                           feature_columns=[x, y])
+                with g.name_scope('layer2') as scope1:
+                    layer2 = tf.contrib.layers.fully_connected(first_layer, self.num_points * 2, scope=scope1)
+                with g.name_scope('hidden1') as scope2:
+                    hidden = tf.contrib.layers.fully_connected(layer2, self.num_classes, scope=scope2)
+                with g.name_scope('hidden2') as scope3:
+                    hidden = tf.contrib.layers.fully_connected(hidden, self.num_classes, scope=scope3)
+                    print hidden
+                    reshaped = tf.reshape(hidden, shape=[1, self.num_points * 2])
+                    print reshaped
+                with g.name_scope('last_layer') as scope4:
+                    unshaped = tf.contrib.layers.fully_connected(reshaped, self.num_classes, scope=scope4)
+                    output = tf.reshape(unshaped, shape=[2, 1])
+                    print output
+                self.output = output
+                self.target = training_helpers.create_target_classes(self.num_classes)
+                self.loss = training_helpers.create_loss_function(output, self.target)
+                self.train_step = training_helpers.create_training(self.loss, .01)
 
-    def create_classifier(self):
-        self.X_placeholder = tf.placeholder(tf.float32, shape=[self.num_points], name="X_values")
-        self.Y_placeholder = tf.placeholder(tf.float32, shape=[self.num_points], name="Y_values")
-        hiddenLayers = [self.num_points * 2, self.num_points, self.num_points / 2]
-        x = tf.contrib.layers.real_valued_column("X")
-        y = tf.contrib.layers.real_valued_column("Y")
-        firstLayer = tf.contrib.layers.input_from_feature_columns(columns_to_tensors={"X":self.X_placeholder,
-                                                                   "Y":self.Y_placeholder},
-                                                                  feature_columns=[x, y])
+                self.init = tf.initialize_all_variables()
+        self.graph.finalize()
 
     @staticmethod
     def distance(p1, p2):
@@ -90,27 +111,27 @@ class Recognizer:
         utils.strip_ids_from_points(points)
         np_points = np.array(points)
         x, y = np.hsplit(np_points, 2)
-        merged_points = np.concatenate((x, y), axis=0)
-        reshaped_points = np.reshape(merged_points, (1, self.num_points * 2))
+        #merged_points = np.concatenate((x, y), axis=0)
+        reshaped_points = np.reshape(np_points, (2, self.num_points))
         return reshaped_points
 
     def create_target(self, label):
         # big punishment to show difference between 0 and 1
-        value_class = 1.0 if label == self.label else -1.0
-        target = np.reshape(np.array(value_class), (1, 1))
-        return target
+        true_class = 1.0 if label == self.label else -1.0
+        null_class = 1.0 if label != self.label else -1.0
+        return [[true_class, null_class]]
 
     def train(self, label, features):
         target = self.create_target(label)
         if self.training_bundle_features is None:
-            self.training_bundle_features = features
+            self.training_bundle_features = [features]
         else:
-            self.training_bundle_features = np.concatenate((self.training_bundle_features, features), axis = 0)
+            self.training_bundle_features.append(features)
 
         if self.training_bundle_targets is None:
-            self.training_bundle_targets = target
+            self.training_bundle_targets = [target]
         else:
-            self.training_bundle_targets = np.concatenate((self.training_bundle_targets, target), axis = 0)
+            self.training_bundle_targets.append(target)
 
         if self.training_bundle_counter >= self.training_bundle_amount:
             self.execute_train_bundle()
@@ -124,8 +145,15 @@ class Recognizer:
 
     def execute_train_bundle(self):
         print 'batch training: ' + self.label
-        self.classifier.fit(x=self.training_bundle_features,
-                            y=self.training_bundle_targets, steps=self.training_bundle_counter)
+
+        with tf.Session(graph=self.graph) as sess:
+            sess.run(self.init)
+            for i in range(self.training_bundle_counter):
+                feed = {self.X_placeholder: self.training_bundle_features[i][0],
+                        self.Y_placeholder: self.training_bundle_features[i][1],
+                        self.target: self.training_bundle_targets[i]}
+                sess.run(self.train_step, feed_dict=feed)
+
         self.training_bundle_features = None
         self.training_bundle_targets = None
         self.training_bundle_counter = 0
@@ -135,10 +163,16 @@ class Recognizer:
             self.execute_train_bundle()
 
     def recognize(self, features):
-        predictions = self.classifier.predict(features)
+        with tf.Session(graph=self.graph) as sess:
+            sess.run(self.init)
+            feed = {self.X_placeholder: features[0],
+                    self.Y_placeholder: features[1]}
+            result = sess.run(self.output, feed)
+            print 'result: ' + self.label
+            print result
         # print self.classifier.predict_proba(features)
         interpretation = Sketch.SrlInterpretation()
         interpretation.label = self.label
-        interpretation.confidence = float(predictions[0])
+        interpretation.confidence = float(0.0)
         return interpretation
 
