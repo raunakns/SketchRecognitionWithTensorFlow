@@ -5,7 +5,7 @@ from generated_proto import pythonRecognitionService_pb2 as rec_proto
 
 import sketch_utils
 from generation import generate_shapes_graph as shape_generation
-from simple import recognizer
+from custom import recognizer
 
 class Recognition_manager:
 
