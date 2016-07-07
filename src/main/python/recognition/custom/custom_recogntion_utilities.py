@@ -26,4 +26,6 @@ def create_target_classes(num_classes):
     return tf.placeholder(tf.float32, [None, num_classes])
 
 def create_loss_function(output, target):
-    return tf.reduce_mean(-tf.reduce_sum(target * tf.log(output), reduction_indices=[1]))
+    loss = tf.reduce_sum(-tf.clip_by_value(target, 1e-10, 1.0) * tf.log(tf.clip_by_value(output, 1e-10, 1.0)))
+    return tf.Print(loss, [loss], "loss amount")
+    #return tf.reduce_mean(-tf.reduce_sum(target * tf.log(output), reduction_indices=[1]))

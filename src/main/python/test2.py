@@ -54,7 +54,7 @@ rec.set_labels(['S', 'X'])
 rec.create_classifiers()
 
 print 'training'
-for i in range(0, 3000):
+for i in range(0, 100):
     rec.add_training_data('S', shape)
 rec.finish_training()
 
