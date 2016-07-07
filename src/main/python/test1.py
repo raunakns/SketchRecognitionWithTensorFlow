@@ -1,11 +1,9 @@
 import math
-
 import numpy as np
 import tensorflow as tf
 
-from recognition.custom import feature_generation as features
 from gui import plotter
-from recognition import tensor_flow_utils
+from recognition.generation import feature_generation as features
 
 tf.reset_default_graph()
 
