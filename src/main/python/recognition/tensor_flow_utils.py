@@ -1,13 +1,22 @@
 
+def getDimensions(tf):
+    X = tf.constant([1, 0])
+    Y = tf.constant([0, 1])
+    BOTH = tf.constant([1, 1])
+    return X, Y, BOTH
+
 def compute_centroid(tf, points):
     # points {[2, ?]} tensor of float_64
     """Computes the centroid of the points."""
     return tf.reduce_mean(points, 0)
 
-def move_to_center(tf, points):
+def move_to_center(tf, points, centroid=None):
     # points {[2, ?]} tensor of float_64
     "moves the list of points to the origin"
-    return points - compute_centroid(tf, points, name="compute center")
+    center_points = centroid
+    if centroid is None:
+        center_points = compute_centroid(tf, points)
+    return points - center_points
 
 def rotate(tf, points, theta):
     # points {[2, ?]} tensor of float_64
@@ -34,7 +43,7 @@ def create_no_op_func(tensor):
 
 def callForEachDimension(tf, points, dim, callback):
     """dim is which dimenision is active (currently only 2 x, y)
-       callback is a function that takes in the list of points and returns function that returns a list of points"""
+       callback is a function that takes in the list of points in the x or y dim and returns function that returns a list of of values"""
     yes = tf.constant(1)
     x_list, y_list = tf.split(1, 2, points)
     x_dim, y_dim = tf.split(0, 2, dim)
@@ -109,3 +118,25 @@ def shear_around_center(tf, points, flip_type, amount):
     offset = centroid - sheared_center
     return result + offset
     return offset
+
+def create_min_func(tf, list, dim):
+    def f1():
+        return tf.reshape(tf.reduce_min(list), shape=[1,1])
+    return f1
+
+def create_max_func(tf, list, dim):
+    def f1():
+        return tf.reshape(tf.reduce_max(list), shape=[1,1])
+    return f1
+
+def compute_extremes(tf, points):
+    """Returns extreme points
+        min list = extremes[0]
+        max list = extremes[1]
+        minxX = extremes[0][0]
+        maxY = extremes[1][1]"""
+    X, Y, BOTH = getDimensions(tf)
+
+    minValues = callForEachDimension(tf, points, BOTH, create_min_func)
+    maxValues = callForEachDimension(tf, points, BOTH, create_max_func)
+    return tf.concat(0, [minValues, maxValues])
